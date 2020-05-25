@@ -1,15 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using WebApiDeveloperChallenge.Common.Attributes;
+using WebApiDeveloperChallenge.Common.Extensions;
+using WebApiDeveloperChallenge.Models;
+using WebApiDeveloperChallenge.Repositories;
 
 namespace WebApiDeveloperChallenge
 {
@@ -26,15 +24,29 @@ namespace WebApiDeveloperChallenge
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddControllers();
+
+      // Add DbContext
+      services.AddDbContext<ContactsContext>(options => options.UseInMemoryDatabase("ContactsDatabase"));
+
+      #region Add repositories
+
+      services.AddScoped<ContactRepository>();
+      services.AddScoped<SkillRepository>();
+
+      #endregion
+
+      #region Add generic model validation
+
+      services.AddScoped<ModelValidationAttribute>();
+
+      #endregion
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
       if (env.IsDevelopment())
-      {
         app.UseDeveloperExceptionPage();
-      }
 
       app.UseHttpsRedirection();
 
@@ -42,10 +54,13 @@ namespace WebApiDeveloperChallenge
 
       app.UseAuthorization();
 
-      app.UseEndpoints(endpoints =>
-      {
-        endpoints.MapControllers();
-      });
+      #region Add global error handling
+
+      app.ConfigureCustomExceptionMiddleware();
+
+      #endregion
+
+      app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
     }
   }
 }

@@ -8,6 +8,9 @@ using WebApiDeveloperChallenge.Common.Attributes;
 using WebApiDeveloperChallenge.Common.Extensions;
 using WebApiDeveloperChallenge.Models;
 using WebApiDeveloperChallenge.Repositories;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Swagger;
+
 
 namespace WebApiDeveloperChallenge
 {
@@ -24,6 +27,13 @@ namespace WebApiDeveloperChallenge
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddControllers();
+
+
+      services.AddSwaggerGen(c =>
+      {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "Default API", Version = "v1" });
+      });
+
 
       // Add DbContext
       services.AddDbContext<ContactsContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -49,6 +59,14 @@ namespace WebApiDeveloperChallenge
 
       if (env.IsDevelopment())
         app.UseDeveloperExceptionPage();
+
+      app.UseSwagger();
+
+      app.UseSwaggerUI(c =>
+      {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "api version 1");
+        c.RoutePrefix = string.Empty;
+      });
 
       app.UseHttpsRedirection();
 

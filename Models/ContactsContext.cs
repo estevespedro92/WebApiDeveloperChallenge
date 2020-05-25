@@ -30,8 +30,7 @@ namespace WebApiDeveloperChallenge.Models
         .HasForeignKey(cs => cs.SkillId);
 
       modelBuilder.Entity<Contact>().HasIndex(s => new { s.Firstname, s.Lastname }).IsUnique();
-      //modelBuilder.Entity<Skill>().HasIndex(s => new {s.Name, s.Level}).IsUnique();
-      modelBuilder.Entity<Skill>().HasAlternateKey(s => new {s.Name, s.Level}).HasName("IX_NameLevel");
+      modelBuilder.Entity<Skill>().HasIndex(s => new {s.Name, s.Level}).IsUnique();
 
     }
   }

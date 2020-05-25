@@ -26,7 +26,7 @@ namespace WebApiDeveloperChallenge
       services.AddControllers();
 
       // Add DbContext
-      services.AddDbContext<ContactsContext>(options => options.UseInMemoryDatabase("ContactsDatabase"));
+      services.AddDbContext<ContactsContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
       #region Add repositories
 
@@ -43,8 +43,10 @@ namespace WebApiDeveloperChallenge
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ContactsContext dataContext)
     {
+      dataContext.Database.Migrate();
+
       if (env.IsDevelopment())
         app.UseDeveloperExceptionPage();
 

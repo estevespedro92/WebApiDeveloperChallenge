@@ -45,7 +45,7 @@ namespace WebApiDeveloperChallenge.Controllers
     public virtual async Task<ActionResult<TEntity>> Post(TEntity entity)
     {
       await _repository.Create(entity);
-      return CreatedAtAction("Get", new {id = entity.Id}, entity);
+      return entity;
     }
 
     [HttpDelete("{id}")]

@@ -1,16 +1,26 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using WebApiDeveloperChallenge.Common.Interfaces;
 
 namespace WebApiDeveloperChallenge.Models
 {
   public class ContactsContext : DbContext
   {
-    public ContactsContext(DbContextOptions<ContactsContext> options) : base(options)
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    public ContactsContext(DbContextOptions<ContactsContext> options,IHttpContextAccessor httpContextAccessor ) : base(options)
     {
+      _httpContextAccessor = httpContextAccessor;
     }
 
     public DbSet<Contact> Contacts { get; set; }
     public DbSet<Skill> Skills { get; set; }
     public DbSet<ContactSkill> ContactSkills { get; set; }
+    public DbSet<UserApplication> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,9 +39,38 @@ namespace WebApiDeveloperChallenge.Models
         .WithMany(c => c.ContactSkills)
         .HasForeignKey(cs => cs.SkillId);
 
-      modelBuilder.Entity<Contact>().HasIndex(s => new { s.Firstname, s.Lastname }).IsUnique();
-      modelBuilder.Entity<Skill>().HasIndex(s => new {s.Name, s.Level}).IsUnique();
+      modelBuilder.Entity<UserApplication>()
+        .HasMany(u => u.Contacts)
+        .WithOne(c => c.User)
+        .HasForeignKey(c => c.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
 
+      modelBuilder.Entity<UserApplication>()
+        .HasMany(u => u.Skills)
+        .WithOne(s => s.User)
+        .HasForeignKey(s => s.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+      modelBuilder.Entity<Contact>().HasIndex(s => new { s.Firstname, s.Lastname, s.UserId }).IsUnique();
+      modelBuilder.Entity<Skill>().HasIndex(s => new {s.Name, s.Level, s.UserId }).IsUnique();
+      modelBuilder.Entity<UserApplication>().HasIndex(u => u.Username).IsUnique();
+    }
+
+
+    /// <summary>
+    /// Override SaveChangesAsync to add UserId
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    {
+      var entitiesList = ChangeTracker.Entries<IUserIdEntity>().Where(e => e.State == EntityState.Added).ToList();
+      if(!entitiesList.Any())
+        return base.SaveChangesAsync(cancellationToken);
+
+      var userId = Guid.Parse(_httpContextAccessor.HttpContext.User.Claims.First(f => f.Type == ClaimTypes.NameIdentifier).Value);
+      entitiesList.ForEach(e => e.Property(p => p.UserId).CurrentValue = userId);
+      return base.SaveChangesAsync(cancellationToken);
     }
   }
 }

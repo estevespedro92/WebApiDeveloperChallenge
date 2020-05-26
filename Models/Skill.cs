@@ -20,6 +20,10 @@ namespace WebApiDeveloperChallenge.Models
     [Required]
     public SkillLevelEnum Level { get; set; }
 
+    public Guid UserId { get; set; }
+
+    public virtual UserApplication User { get; set; }
+
     public ICollection<ContactSkill> ContactSkills { get; set; }
 
   }

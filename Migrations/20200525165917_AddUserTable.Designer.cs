@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApiDeveloperChallenge.Models;
 
 namespace WebApiDeveloperChallenge.Migrations
 {
     [DbContext(typeof(ContactsContext))]
-    partial class ContactsContextModelSnapshot : ModelSnapshot
+    [Migration("20200525165917_AddUserTable")]
+    partial class AddUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,14 +51,9 @@ namespace WebApiDeveloperChallenge.Migrations
                         .HasColumnType("nvarchar(16)")
                         .HasMaxLength(16);
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("Firstname", "Lastname", "UserId")
+                    b.HasIndex("Firstname", "Lastname")
                         .IsUnique();
 
                     b.ToTable("Contacts");
@@ -91,14 +88,9 @@ namespace WebApiDeveloperChallenge.Migrations
                         .HasColumnType("nvarchar(60)")
                         .HasMaxLength(60);
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("Name", "Level", "UserId")
+                    b.HasIndex("Name", "Level")
                         .IsUnique();
 
                     b.ToTable("Skills");
@@ -126,15 +118,6 @@ namespace WebApiDeveloperChallenge.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("WebApiDeveloperChallenge.Models.Contact", b =>
-                {
-                    b.HasOne("WebApiDeveloperChallenge.Models.UserApplication", "User")
-                        .WithMany("Contacts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("WebApiDeveloperChallenge.Models.ContactSkill", b =>
                 {
                     b.HasOne("WebApiDeveloperChallenge.Models.Contact", "Contact")
@@ -147,15 +130,6 @@ namespace WebApiDeveloperChallenge.Migrations
                         .WithMany("ContactSkills")
                         .HasForeignKey("SkillId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("WebApiDeveloperChallenge.Models.Skill", b =>
-                {
-                    b.HasOne("WebApiDeveloperChallenge.Models.UserApplication", "User")
-                        .WithMany("Skills")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

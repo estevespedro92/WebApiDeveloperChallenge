@@ -8,9 +8,6 @@ using WebApiDeveloperChallenge.Common.Attributes;
 using WebApiDeveloperChallenge.Common.Extensions;
 using WebApiDeveloperChallenge.Models;
 using WebApiDeveloperChallenge.Repositories;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Swagger;
-
 
 namespace WebApiDeveloperChallenge
 {
@@ -27,21 +24,18 @@ namespace WebApiDeveloperChallenge
     public void ConfigureServices(IServiceCollection services)
     {
       services.AddControllers();
-
-
-      services.AddSwaggerGen(c =>
-      {
-        c.SwaggerDoc("v1", new OpenApiInfo { Title = "Default API", Version = "v1" });
-      });
-
+      services.EnableSwaggerWithDefaultSettings();
 
       // Add DbContext
-      services.AddDbContext<ContactsContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+      services.AddDbContext<ContactsContext>(options =>
+        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
       #region Add repositories
 
       services.AddScoped<ContactRepository>();
       services.AddScoped<SkillRepository>();
+      services.AddScoped<UserRepository>();
+      services.AddHttpContextAccessor();
 
       #endregion
 
@@ -50,6 +44,9 @@ namespace WebApiDeveloperChallenge
       services.AddScoped<ModelValidationAttribute>();
 
       #endregion
+
+      services.AddSingleton(Configuration);
+      services.EnableJWTTokenAuthentification(Configuration);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,6 +70,8 @@ namespace WebApiDeveloperChallenge
       app.UseRouting();
 
       app.UseAuthorization();
+
+      app.UseAuthentication();
 
       #region Add global error handling
 

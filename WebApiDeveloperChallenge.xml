@@ -25,6 +25,7 @@
         </member>
         <member name="M:WebApiDeveloperChallenge.Common.Extensions.ServiceCollectionExtension.EnableSwaggerWithDefaultSettings(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
+              Enable swagger with default settings
             </summary>
             <param name="services"></param>
         </member>
@@ -35,17 +36,34 @@
             <param name="services"></param>
             <param name="configuration"></param>
         </member>
+        <member name="T:WebApiDeveloperChallenge.Common.Interfaces.IEntity">
+            <summary>
+            Interface from key entity
+            </summary>
+        </member>
         <member name="T:WebApiDeveloperChallenge.Common.Interfaces.IRepository`1">
             <summary>
             Interface from default repository methods
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="T:WebApiDeveloperChallenge.Common.Interfaces.IUserIdEntity">
+            <summary>
+            Interface from userId entity
+            </summary>
+        </member>
         <member name="T:WebApiDeveloperChallenge.Common.Interfaces.IUserRepository`1">
             <summary>
-            Interface from default repository methods
+              Interface from default repository methods
             </summary>
             <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:WebApiDeveloperChallenge.Common.Interfaces.IUserRepository`1.GetWithoutUserId(System.Guid)">
+            <summary>
+            Get data without check user id
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
         </member>
         <member name="M:WebApiDeveloperChallenge.Common.Middlewares.ExceptionMiddleware.HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception)">
             <summary>

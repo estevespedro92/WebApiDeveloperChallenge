@@ -118,7 +118,7 @@ namespace WebApiDeveloperChallenge.Controllers
     private async Task<ActionResult> CheckUserIdPermission(Guid id, List<Guid> skillIds = null)
     {
       // Check if current user is the same from entity
-      var oldEntity = (IUserIdEntity) await _repository.GetWhitoutUserId(id);
+      var oldEntity = (IUserIdEntity) await _repository.GetWithoutUserId(id);
       if (oldEntity == null)
         return NotFound();
 

@@ -1,9 +1,14 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using WebApiDeveloperChallenge.Common.Classes;
+using WebApiDeveloperChallenge.Common.Globals;
 
 namespace WebApiDeveloperChallenge.Common.Extensions
 {
@@ -16,11 +21,21 @@ namespace WebApiDeveloperChallenge.Common.Extensions
     {
       services.AddSwaggerGen(c =>
       {
-        c.SwaggerDoc("v1", new OpenApiInfo {Title = "Default API", Version = "v1"});
-        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        c.SwaggerDoc("v1", new OpenApiInfo
+        {
+          Title = "Default API", 
+          Version = "v1",
+          Description = "API for WebApiDeveloper Challenge",
+          Contact = new OpenApiContact
+          {
+            Email = "estevespereirapedro@icloud.com",
+            Name = "Pedro Esteves",
+          }
+        });
+        c.AddSecurityDefinition(GlobalApplicationSettings.BEARER_NAME, new OpenApiSecurityScheme
         {
           Name = "Authorization",
-          Scheme = "Bearer",
+          Scheme = GlobalApplicationSettings.BEARER_NAME,
           In = ParameterLocation.Header,
           Description = "JWT Authorization header using the Bearer scheme.",
           Type = SecuritySchemeType.ApiKey
@@ -34,15 +49,20 @@ namespace WebApiDeveloperChallenge.Common.Extensions
               Reference = new OpenApiReference
               {
                 Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
+                Id = GlobalApplicationSettings.BEARER_NAME
               },
               Scheme = "oauth2",
-              Name = "Bearer",
+              Name = GlobalApplicationSettings.BEARER_NAME,
               In = ParameterLocation.Header
             },
             new string[] { }
           }
         });
+
+        // Include xml documentation 
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        c.IncludeXmlComments(xmlPath);
       });
     }
 
@@ -51,7 +71,7 @@ namespace WebApiDeveloperChallenge.Common.Extensions
     /// </summary>
     /// <param name="services"></param>
     /// <param name="configuration"></param>
-    public static void EnableJWTTokenAuthentification(this IServiceCollection services, IConfiguration configuration)
+    public static void EnableJwtTokenAuthentification(this IServiceCollection services, IConfiguration configuration)
     {
       services.AddAuthentication(option =>
       {
@@ -67,9 +87,9 @@ namespace WebApiDeveloperChallenge.Common.Extensions
           ValidateAudience = true,
           ValidateLifetime = false,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = configuration["JwtToken:Issuer"],
-          ValidAudience = configuration["JwtToken:Issuer"],
-          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtToken:SecretKey"]))
+          ValidIssuer = configuration[GlobalApplicationSettings.JWT_TOKEN_ISSUER_NAME],
+          ValidAudience = configuration[GlobalApplicationSettings.JWT_TOKEN_ISSUER_NAME],
+          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration[GlobalApplicationSettings.JWT_TOKEN_SECRET_KEY_NAME]))
         };
       });
     }

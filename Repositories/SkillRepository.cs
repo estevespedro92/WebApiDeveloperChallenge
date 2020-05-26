@@ -1,4 +1,5 @@
-﻿using WebApiDeveloperChallenge.Models;
+﻿using System;
+using WebApiDeveloperChallenge.Models;
 
 namespace WebApiDeveloperChallenge.Repositories
 {

@@ -7,12 +7,8 @@ using WebApiDeveloperChallenge.Common.Interfaces;
 
 namespace WebApiDeveloperChallenge.Models
 {
-  public class Skill : IEntity
+  public class Skill : IEntity, IUserIdEntity
   {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [Key]
-    public Guid Id { get; set; }
-
     [StringLength(60, ErrorMessage = "Name can't be longer than 60 characters")]
     [Required]
     public string Name { get; set; }
@@ -26,5 +22,8 @@ namespace WebApiDeveloperChallenge.Models
 
     public ICollection<ContactSkill> ContactSkills { get; set; }
 
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
+    public Guid Id { get; set; }
   }
 }

@@ -4,58 +4,65 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WebApiDeveloperChallenge.Models;
 using WebApiDeveloperChallenge.Repositories;
+using WebApiDeveloperChallenge.Representations;
 
 namespace WebApiDeveloperChallenge.Controllers
 {
   [Route("api/[controller]")]
-  public class UserController : BaseController<UserApplication, UserRepository>
+  public class UserController : BaseController<UserApplication, UserApplicationRepresentation, UserRepository>
   {
     private readonly IConfiguration _configuration;
-    private readonly UserRepository _repository;
 
-    public UserController(UserRepository repository, IConfiguration configuration) : base(repository)
+    public UserController(UserRepository repository, IConfiguration configuration, IMapper mapper) : base(repository, mapper)
     {
-      _repository = repository;
       _configuration = configuration;
     }
 
     #region Disable routes
 
     [NonAction]
-    public override Task<ActionResult<IEnumerable<UserApplication>>> Get()
+    public override Task<ActionResult<IEnumerable<UserApplicationRepresentation>>> Get()
     {
       return base.Get();
     }
 
     [NonAction]
-    public override Task<ActionResult<UserApplication>> Delete(Guid id)
+    public override Task<ActionResult<UserApplicationRepresentation>> Delete(Guid id)
     {
       return base.Delete(id);
     }
 
     [NonAction]
-    public override Task<ActionResult<UserApplication>> Get(Guid id)
+    public override Task<ActionResult<UserApplicationRepresentation>> Get(Guid id)
     {
       return base.Get(id);
     }
 
     [NonAction]
-    public override Task<ActionResult<UserApplication>> Put(Guid id, UserApplication entity)
+    public override Task<ActionResult<UserApplicationRepresentation>> Put(Guid id, UserApplicationRepresentation entity)
     {
       return base.Put(id, entity);
     }
+
     #endregion
 
+    /// <summary>
+    /// Get Token from user
+    /// </summary>
+    /// <param name="username"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
     [HttpGet("GetToken")]
     public async Task<ActionResult<string>> GetTokenAsync(string username, string password)
     {
-      var userFounded = await _repository.GetUser(username, password);
+      var userFounded = await Repository.GetUser(username, password);
       if (userFounded == null)
         return NotFound(username);
 

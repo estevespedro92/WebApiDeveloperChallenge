@@ -1,5 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using WebApiDeveloperChallenge.Common.Extensions;
 using WebApiDeveloperChallenge.Models;
 
 namespace WebApiDeveloperChallenge.Repositories
@@ -7,7 +10,6 @@ namespace WebApiDeveloperChallenge.Repositories
   public class UserRepository : RepositoryBase<UserApplication, ContactsContext>
   {
     private readonly ContactsContext _context;
-
     public UserRepository(ContactsContext context) : base(context)
     {
       _context = context;

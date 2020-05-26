@@ -5,13 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using WebApiDeveloperChallenge.Common.Extensions;
 using WebApiDeveloperChallenge.Common.Interfaces;
 
 namespace WebApiDeveloperChallenge.Models
 {
   public class ContactsContext : DbContext
   {
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    public readonly IHttpContextAccessor _httpContextAccessor;
     public ContactsContext(DbContextOptions<ContactsContext> options,IHttpContextAccessor httpContextAccessor ) : base(options)
     {
       _httpContextAccessor = httpContextAccessor;
@@ -68,7 +69,7 @@ namespace WebApiDeveloperChallenge.Models
       if(!entitiesList.Any())
         return base.SaveChangesAsync(cancellationToken);
 
-      var userId = Guid.Parse(_httpContextAccessor.HttpContext.User.Claims.First(f => f.Type == ClaimTypes.NameIdentifier).Value);
+      var userId = _httpContextAccessor.HttpContext.User.GetUserId();
       entitiesList.ForEach(e => e.Property(p => p.UserId).CurrentValue = userId);
       return base.SaveChangesAsync(cancellationToken);
     }

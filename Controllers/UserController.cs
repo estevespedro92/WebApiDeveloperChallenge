@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -20,7 +21,7 @@ namespace WebApiDeveloperChallenge.Controllers
   {
     private readonly IConfiguration _configuration;
 
-    public UserController(UserRepository repository, IConfiguration configuration, IMapper mapper) : base(repository, mapper)
+    public UserController(UserRepository repository, IConfiguration configuration, IMapper mapper, IHttpContextAccessor httpContextAccessor) : base(repository, mapper, httpContextAccessor)
     {
       _configuration = configuration;
     }

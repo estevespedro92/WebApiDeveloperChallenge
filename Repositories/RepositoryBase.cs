@@ -37,7 +37,7 @@ namespace WebApiDeveloperChallenge.Repositories
 
     public async Task<TEntity> Get(Guid id)
     {
-      return await _context.Set<TEntity>().FirstOrDefaultAsync(e => e.Id == id);
+      return await _context.Set<TEntity>().FirstOrDefaultAsync(e => e.Id.Equals(id));
     }
 
     public async Task<List<TEntity>> GetAll()

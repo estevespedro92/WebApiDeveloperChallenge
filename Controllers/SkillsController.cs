@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApiDeveloperChallenge.Models;
 using WebApiDeveloperChallenge.Repositories;
@@ -14,7 +15,7 @@ namespace WebApiDeveloperChallenge.Controllers
   [ApiController]
   public class SkillsController : BaseController<Skill, SkillRepresentation, SkillRepository>
   {
-    public SkillsController(SkillRepository repository, IMapper mapper) : base(repository, mapper)
+    public SkillsController(SkillRepository repository, IMapper mapper, IHttpContextAccessor httpContextAccessor) : base(repository, mapper, httpContextAccessor)
     {
     }
   }

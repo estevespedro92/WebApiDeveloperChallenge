@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using WebApiDeveloperChallenge.Common.Classes;
+using WebApiDeveloperChallenge.Common.Exceptions;
+using WebApiDeveloperChallenge.Common.Extensions;
 
 namespace WebApiDeveloperChallenge.Common.Middlewares
 {
@@ -42,12 +44,29 @@ namespace WebApiDeveloperChallenge.Common.Middlewares
     {
       context.Response.ContentType = "application/json";
       context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
       var errorDetails = new ErrorDetails
       {
         StatusCode = context.Response.StatusCode,
-        Message = "Unable to perform this operation."
+        Message = GetMessageFromException(exception)
       }.ToString();
       return context.Response.WriteAsync(errorDetails);
+    }
+
+    /// <summary>
+    /// Get specific message from exception
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <returns></returns>
+    private string GetMessageFromException(Exception exception)
+    {
+      switch (exception)
+      {
+        case UserIdRelatedDataException _:
+        case UserIdRelatedDataUsedException _:
+          return exception.Message;
+      }
+      return "Unable to perform this operation.";
     }
   }
 }

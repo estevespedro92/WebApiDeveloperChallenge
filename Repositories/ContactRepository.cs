@@ -11,12 +11,12 @@ using WebApiDeveloperChallenge.Models;
 
 namespace WebApiDeveloperChallenge.Repositories
 {
-  public class ContactRepository : RepositoryBase<Contact, ContactsContext>
+  public class ContactRepository : RepositoryUserBase<Contact, ContactsContext>
   {
     private readonly ContactsContext _context;
     private readonly Guid _currentUserId;
 
-    public ContactRepository(ContactsContext context, IHttpContextAccessor httpContextAccessor) : base(context)
+    public ContactRepository(ContactsContext context, IHttpContextAccessor httpContextAccessor) : base(context, httpContextAccessor)
     {
       _context = context;
       _currentUserId = httpContextAccessor.HttpContext.User.GetUserId();
@@ -25,10 +25,10 @@ namespace WebApiDeveloperChallenge.Repositories
     public async Task<List<Contact>> Get(bool isSkillsIncluded)
     {
       if (isSkillsIncluded)
-        return await _context.Contacts.Where(s => s.UserId == _currentUserId).Include(s => s.ContactSkills)
+        return await _context.Contacts.Where(s => s.UserId.Equals(_currentUserId)).Include(s => s.ContactSkills)
           .ThenInclude(cs => cs.Skill).ToListAsync();
 
-      return await _context.Contacts.Where(s => s.UserId == _currentUserId).ToListAsync();
+      return await _context.Contacts.Where(s => s.UserId.Equals(_currentUserId)).ToListAsync();
     }
 
     public async Task<Contact> GetById(Guid id, bool isSkillsIncluded)

@@ -65,7 +65,7 @@ namespace WebApiDeveloperChallenge.Models
     /// <returns></returns>
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
-      var entitiesList = ChangeTracker.Entries<IUserIdEntity>().Where(e => e.State == EntityState.Added).ToList();
+      var entitiesList = ChangeTracker.Entries<IUserIdEntity>().Where(e => e.State.Equals(EntityState.Added)).ToList();
       if(!entitiesList.Any())
         return base.SaveChangesAsync(cancellationToken);
 

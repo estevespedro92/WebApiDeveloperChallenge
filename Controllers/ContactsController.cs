@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebApiDeveloperChallenge.Common.Exceptions;
+using WebApiDeveloperChallenge.Common.Extensions;
+using WebApiDeveloperChallenge.Common.Interfaces;
 using WebApiDeveloperChallenge.Models;
 using WebApiDeveloperChallenge.Repositories;
 using WebApiDeveloperChallenge.Representations;
@@ -17,16 +21,22 @@ namespace WebApiDeveloperChallenge.Controllers
   [ApiController]
   public class ContactsController : ControllerBase
   {
-    private readonly ContactRepository _repository;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IMapper _mapper;
-    public ContactsController(ContactRepository repository, IMapper mapper)
+    private readonly ContactRepository _repository;
+    private readonly SkillRepository _skillRepository;
+
+    public ContactsController(ContactRepository repository, SkillRepository skillRepository, IMapper mapper,
+      IHttpContextAccessor httpContextAccessor)
     {
       _repository = repository;
+      _skillRepository = skillRepository;
       _mapper = mapper;
+      _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
-    /// Get lists from contact (from user)
+    ///   Get lists from contact (from user)
     /// </summary>
     /// <param name="isSkillsIncluded">Indicate if skills must be returned</param>
     /// <returns></returns>
@@ -37,9 +47,8 @@ namespace WebApiDeveloperChallenge.Controllers
       return contacts.Select(c => _mapper.Map<ContactSkillRepresentation>(c)).ToList();
     }
 
-    
     /// <summary>
-    /// Get contact (from user)
+    ///   Get contact (from user)
     /// </summary>
     /// <param name="id"></param>
     /// <param name="isSkillsIncluded">Indicate if skills must be returned</param>
@@ -53,24 +62,28 @@ namespace WebApiDeveloperChallenge.Controllers
     }
 
     /// <summary>
-    /// Update contact (from user)
-    ///
+    ///   Update contact (from user)
     /// </summary>
     /// <param name="id"></param>
     /// <param name="entity"></param>
     /// <returns></returns>
     [HttpPut("{id}")]
-    public virtual async Task<ActionResult<ContactSkillRepresentation>> Put(Guid id, ContactSkillSimplifiedRepresentation entity)
+    public virtual async Task<ActionResult<ContactSkillRepresentation>> Put(Guid id,
+      ContactSkillSimplifiedRepresentation entity)
     {
-      if (id != entity.Contact.Id) return BadRequest();
+      if (!id.Equals(entity.Contact.Id)) return BadRequest();
       var contact = _mapper.Map<ContactRepresentation, Contact>(entity.Contact);
+
+      var result = await CheckUserIdPermission(id, entity.SkillIds.ToList());
+      if (result is NotFoundResult)
+        return result;
 
       contact = await _repository.Update(contact, entity.SkillIds);
       return _mapper.Map<ContactSkillRepresentation>(contact);
     }
 
     /// <summary>
-    /// Add contact
+    ///   Add contact
     /// </summary>
     /// <param name="entity"></param>
     /// <returns></returns>
@@ -83,16 +96,53 @@ namespace WebApiDeveloperChallenge.Controllers
     }
 
     /// <summary>
-    /// Delete contact
+    ///   Delete contact
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpDelete("{id}")]
-    public virtual async Task<ActionResult<ContactRepresentation>> Delete(Guid id)
+    public async Task<ActionResult<ContactRepresentation>> Delete(Guid id)
     {
+      await CheckUserIdPermission(id);
       var entity = await _repository.Delete(id);
       if (entity == null) return NotFound();
       return _mapper.Map<ContactRepresentation>(entity);
+    }
+
+    /// <summary>
+    ///   Check if changes are made by data user
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="skillIds"></param>
+    /// <returns></returns>
+    private async Task<ActionResult> CheckUserIdPermission(Guid id, List<Guid> skillIds = null)
+    {
+      // Check if current user is the same from entity
+      var oldEntity = (IUserIdEntity) await _repository.GetWhitoutUserId(id);
+      if (oldEntity == null)
+        return NotFound();
+
+      var currentId = _httpContextAccessor.HttpContext.User.GetUserId();
+
+      if (!oldEntity.UserId.Equals(currentId))
+        throw new UserIdRelatedDataException();
+
+      if (skillIds == null)
+        return Ok();
+
+      if (!skillIds.Any())
+        return Ok();
+
+      var skills = await _skillRepository.GetAllWithoutUserId();
+
+      var currentSkills = skills.Where(s => skillIds.Contains(s.Id)).ToList();
+      if (!currentSkills.Any())
+        return Ok();
+
+      if (currentSkills.Any(s => !s.UserId.Equals(currentId)))
+        throw new UserIdRelatedDataUsedException();
+
+      return Ok();
     }
   }
 }

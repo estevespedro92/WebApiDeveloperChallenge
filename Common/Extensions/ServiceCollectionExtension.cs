@@ -15,6 +15,7 @@ namespace WebApiDeveloperChallenge.Common.Extensions
   public static class ServiceCollectionExtension
   {
     /// <summary>
+    ///   Enable swagger with default settings
     /// </summary>
     /// <param name="services"></param>
     public static void EnableSwaggerWithDefaultSettings(this IServiceCollection services)
